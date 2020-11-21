@@ -26,14 +26,40 @@
 
 /* Rx Structures USART */
 #ifdef SERIAL_CONTROL
-typedef struct{
+/* typedef struct{
   uint16_t  start;
   int16_t   roll;
   int16_t   pitch;
   int16_t   yaw;
   uint16_t  sensors;
   uint16_t  checksum;
-} SerialSideboard;
+} SerialSideboard; */
+typedef struct {
+  uint16_t start;
+  int16_t steer;
+  int16_t speed;
+  uint16_t checksum;
+} SerialCommand;
+typedef struct {
+    uint16_t start;
+    int16_t  speed;
+    bool     enabled;
+    uint16_t checksum;
+} OneWheelCommand;
+typedef struct {
+    OneWheelCommand commandL;
+    OneWheelCommand commandR;
+} TwoWheelCommand;
+/* typedef struct tag_sensor_frame{
+  uint16_t header_00; // this byte gets 0x100 (9 bit serial)
+  int16_t Angle;
+  int16_t Angle_duplicate;
+  unsigned char AA_55;
+  int16_t Accelleration;
+  int16_t Accelleration_duplicate;
+  int16_t Roll;
+  uint16_t checksum;
+} SENSOR_FRAME; */
 #endif
 #ifdef SERIAL_FEEDBACK
 typedef struct{
@@ -47,6 +73,14 @@ typedef struct{
   uint16_t  cmdLed;
   uint16_t  checksum;
 } SerialFeedback;
+/* typedef struct tag_sensor_lights {
+  unsigned char colour; // this byte gets bit 8 set (on 9 bit serial);
+  unsigned char unknown;
+  unsigned char flashcount; // non zero-> red flash number of times with pause
+  unsigned char unknown1;
+  unsigned char unknown2;
+  unsigned char unknown3;
+} SENSOR_LIGHTS; */
 #endif
 
 /* general functions */

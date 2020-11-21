@@ -27,8 +27,9 @@
 // Ubuntu: define the desired build variant here if you want to use make in console
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_DEBUG". Select only one at a time.
 #if !defined(PLATFORMIO)
-  // #define VARIANT_DEBUG                       // Variant for debugging and checking the capabilities of the side-board
-  // #define VARIANT_HOVERBOARD                  // Variant for using the side-boards connected to the Hoverboard mainboard
+// #define VARIANT_DEBUG                       // Variant for debugging and checking the capabilities of the side-board
+#define VARIANT_HOVERBOARD                  // Variant for using the side-boards connected to the Hoverboard mainboard
+#define AUTONOMOUS
 #endif
 
 /* ==================================== DO NOT TOUCH SETTINGS ==================================== */
@@ -47,7 +48,7 @@
 #define MPU_DEFAULT_HZ            20          // [Hz] Default MPU frequecy: must be between 1Hz and 200Hz.
 #define TEMP_READ_MS              500         // [ms] Temperature read time interval
 #define PEDO_READ_MS              1000        // [ms] Pedometer read time interval
-// #define USE_CAL_HW_REGISTERS                  // [-] Uncommnent this to SAVE the sensor calibration to the MPU-6050 registers after the Self-test was run
+#define USE_CAL_HW_REGISTERS                  // [-] Uncommnent this to SAVE the sensor calibration to the MPU-6050 registers after the Self-test was run
 
 // DMP Tap Detection Settings
 #define DMP_TAP_AXES              TAP_XYZ     // [-] Set which axes will register a tap: TAP_XYZ, TAP_X, TAP_Y, TAP_Z
@@ -62,13 +63,14 @@
 
 /* ==================================== SETTINGS USART ==================================== */
 #if defined(VARIANT_DEBUG)
-  #define SERIAL_DEBUG                        // [-] Define for Serial Debug via the serial port
+#define SERIAL_DEBUG                        // [-] Define for Serial Debug via the serial port
 #elif defined(VARIANT_HOVERBOARD)
-  #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
-  #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
+#define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
+#define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
 #endif
 #define USART_MAIN_BAUD           38400       // [bit/s] MAIN Serial Tx/Rx baud rate
 #define SERIAL_START_FRAME        0xABCD      // [-] Start frame definition for reliable serial communication
+#define SENSOR_FRAME_START        0x100
 #define SERIAL_BUFFER_SIZE        64          // [bytes] Size of Serial Rx buffer. Make sure it is always larger than the 'Feedback' structure size
 #define SERIAL_TIMEOUT            600         // [-] Number of wrong received data for Serial timeout detection. Depends on DELAY_IN_MAIN_LOOP
 
@@ -78,24 +80,24 @@
 // #define AUX45_USE_I2C                         // [-] Use AUX4, AUX5 as I2C port
 #define AUX45_USE_USART                       // [-] Use AUX4, AUX5 as USART port
 #ifdef AUX45_USE_USART
-  #define USART_AUX_BAUD          38400       // [bit/s] AUX Serial Tx/Rx baud rate
+#define USART_AUX_BAUD          38400       // [bit/s] AUX Serial Tx/Rx baud rate
 #endif
 #ifdef AUX45_USE_I2C
-  #define AUX_I2C_SPEED           100000      // [bit/s] Define I2C speed for communicating via AUX45 wires
+#define AUX_I2C_SPEED           100000      // [bit/s] Define I2C speed for communicating via AUX45 wires
 #endif
 
 
 /* ==================================== VALIDATE SETTINGS ==================================== */
 #if defined(SERIAL_DEBUG) && defined(SERIAL_CONTROL)
-  #error SERIAL_DEBUG and SERIAL_CONTROL not allowed. It is on the same cable.
+#error SERIAL_DEBUG and SERIAL_CONTROL not allowed. It is on the same cable.
 #endif
 
 #if defined(SERIAL_DEBUG) && defined(SERIAL_FEEDBACK)
-  #error SERIAL_DEBUG and SERIAL_FEEDBACK not allowed. It is on the same cable.
+#error SERIAL_DEBUG and SERIAL_FEEDBACK not allowed. It is on the same cable.
 #endif
 
 #if defined(AUX45_USE_GPIO) && (defined(AUX45_USE_USART) || defined(AUX45_USE_I2C)) || (defined(AUX45_USE_USART) && defined(AUX45_USE_I2C))
-  #error AUX45_USE_(GPIO,USART,I2C) not allowed in the same time. It is on the same cable.
+#error AUX45_USE_(GPIO,USART,I2C) not allowed in the same time. It is on the same cable.
 #endif
 
 #endif

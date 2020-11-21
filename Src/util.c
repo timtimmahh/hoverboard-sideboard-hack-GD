@@ -30,7 +30,9 @@
 
 // USART variables
 #ifdef SERIAL_CONTROL
-SerialSideboard Sideboard;
+// SerialSideboard Sideboard;
+// SENSOR_FRAME Frame;
+OneWheelCommand command;
 #endif
 
 #if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
@@ -43,7 +45,7 @@ SerialFeedback Feedback;
 SerialFeedback FeedbackRaw;
 uint16_t timeoutCntSerial = 0;  				// Timeout counter for Rx Serial command
 uint8_t timeoutFlagSerial = 0;  				// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
-static uint32_t Feedback_len  = sizeof(Feedback);
+static uint32_t Lights_len  = sizeof(Feedback);
 #endif
 
 // MPU variables
@@ -146,7 +148,8 @@ void intro_demo_led(uint32_t tDelay)
 /* =========================== Input Initialization Function =========================== */
 void input_init(void) {
 	#ifdef SERIAL_CONTROL
-		usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
+		// usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
+		usart_Tx_DMA_config(USART_MAIN, (uint8_t*)&command, sizeof(command));
 	#endif
 	#if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
 		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)rx_buffer, sizeof(rx_buffer));
@@ -206,10 +209,10 @@ void usart_rx_check(void)
     pos = rx_buffer_len - dma_transfer_number_get(DMA_CH4); 					// Calculate current position in buffer
     if (pos != old_pos) {                       								// Check change in received data
 		ptr = (uint8_t *)&FeedbackRaw;											// Initialize the pointer with FeedbackRaw address
-        if (pos > old_pos && (pos - old_pos) == Feedback_len) {      			// "Linear" buffer mode: check if current position is over previous one AND data length equals expected length
-			memcpy(ptr, &rx_buffer[old_pos], Feedback_len); 					// Copy data. This is possible only if FeedbackRaw is contiguous! (meaning all the structure members have the same size)
+        if (pos > old_pos && (pos - old_pos) == Lights_len) {      			// "Linear" buffer mode: check if current position is over previous one AND data length equals expected length
+			memcpy(ptr, &rx_buffer[old_pos], Lights_len); 					// Copy data. This is possible only if FeedbackRaw is contiguous! (meaning all the structure members have the same size)
 			usart_process_data(&FeedbackRaw, &Feedback);						// Process data
-        } else if ((rx_buffer_len - old_pos + pos) == Feedback_len) {			// "Overflow" buffer mode: check if data length equals expected length
+        } else if ((rx_buffer_len - old_pos + pos) == Lights_len) {			// "Overflow" buffer mode: check if data length equals expected length
 			memcpy(ptr, &rx_buffer[old_pos], rx_buffer_len - old_pos); 			// First copy data from the end of buffer
             if (pos > 0) {														// Check and continue with beginning of buffer
 				ptr += rx_buffer_len - old_pos;									// Move to correct position in FeedbackRaw		

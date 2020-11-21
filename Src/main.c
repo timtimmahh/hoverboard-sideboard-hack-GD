@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "gd32f1x0.h"
 #include "systick.h"
 #include "i2c_it.h"
@@ -30,7 +31,9 @@
 #include "mpu6050_dmp.h"
 
 #ifdef SERIAL_CONTROL
-extern SerialSideboard Sideboard;
+// extern SerialSideboard Sideboard;
+// extern SENSOR_FRAME Frame;
+extern OneWheelCommand command;
 #endif
 
 #ifdef SERIAL_FEEDBACK
@@ -58,6 +61,8 @@ int main(void)
 	i2c_nvic_config();									// I2C interrupt configuration
 	input_init(); 										// Input initialization
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EndlessLoop"
 	while(1) {
 		
 		delay_1ms(DELAY_IN_MAIN_LOOP);
@@ -101,7 +106,8 @@ int main(void)
 			gpio_bit_set(LED4_GPIO_Port, LED4_Pin);
 			consoleLog("-- SENSOR 1 Active --\n");			
 		} else if(sensor1 == SET && sensor1_read == RESET) {
-			// Sensor DEACTIVE: Do something here (one time task on deactivation)
+			// Sensor DEACTIVE: Do something here (one time task on
+			// deactivatiWon)
 			sensor1 = RESET;
 			gpio_bit_reset(LED4_GPIO_Port, LED4_Pin);
 			consoleLog("-- SENSOR 1 Deactive --\n");			
@@ -132,16 +138,32 @@ int main(void)
 		#ifdef SERIAL_CONTROL
 			// To transmit on USART
 			if (main_loop_counter % 5 == 0 && dma_transfer_number_get(DMA_CH3) == 0) { 	// Check if DMA channel counter is 0 (meaning all data has been transferred)
-				Sideboard.start    	= (uint16_t)SERIAL_START_FRAME;
-				Sideboard.roll    	= (int16_t)mpu.euler.roll;
-				Sideboard.pitch    	= (int16_t)mpu.euler.pitch;
-				Sideboard.yaw    	= (int16_t)mpu.euler.yaw;
-				Sideboard.sensors	= (uint16_t)(sensor1 | (sensor2 << 1) | (mpuStatus << 2));
-				Sideboard.checksum 	= (uint16_t)(Sideboard.start ^ Sideboard.roll ^ Sideboard.pitch ^ Sideboard.yaw ^ Sideboard.sensors);
+				command.start				= (uint16_t)SERIAL_START_FRAME;
+				command.enabled				= sensor1 && sensor2;
+				command.speed				= command.enabled ? (mpu.euler.pitch / 9.0) : 0;
+				command.checksum			= (uint16_t)command.start ^ command.enabled ^ command.speed;
+				// Frame.header_00			= (uint16_t)SERIAL_START_FRAME;
+				// Frame.Angle				= (int16_t)mpu.euler.pitch;
+				// Frame.Angle_duplicate 	= (int16_t)mpu.euler.pitch;
+				// Frame.AA_55 			= (unsigned char)(sensor1 && sensor2 ? 0x55 : 0xAA);
+				// Frame.Accelleration 	= (int16_t)sqrt(pow(mpu.accel.x, 2) + pow(mpu.accel.y, 2) + pow(mpu.accel.z, 2));
+				// Frame.Accelleration_duplicate = (int16_t)Frame.Accelleration;
+				// Frame.Roll				= (int16_t)mpu.euler.roll;
+				// Frame.checksum			= (uint16_t)(Frame.header_00 ^ Frame.Angle ^ Frame.Angle_duplicate 
+				// 										^ Frame.AA_55 ^ Frame.Accelleration 
+				// 										^ Frame.Accelleration_duplicate ^ Frame.Roll);
+				// Sideboard.start    	= (uint16_t)SERIAL_START_FRAME;
+				// Sideboard.roll    	= (int16_t)mpu.euler.roll;
+				// Sideboard.pitch    	= (int16_t)mpu.euler.pitch;
+				// Sideboard.yaw    	= (int16_t)mpu.euler.yaw;
+				// Sideboard.sensors	= (uint16_t)(sensor1 | (sensor2 << 1) | (mpuStatus << 2));
+				// Sideboard.checksum 	= (uint16_t)(Sideboard.start ^ Sideboard.roll ^ Sideboard.pitch ^ Sideboard.yaw ^ Sideboard.sensors);
 			
 				dma_channel_disable(DMA_CH3);
-				DMA_CHCNT(DMA_CH3) 		= sizeof(Sideboard);
-				DMA_CHMADDR(DMA_CH3) 	= (uint32_t)&Sideboard;
+				// DMA_CHCNT(DMA_CH3) 		= sizeof(Sideboard);
+				// DMA_CHMADDR(DMA_CH3) 	= (uint32_t)&Sideboard;
+				DMA_CHCNT(DMA_CH3) 		= sizeof(command);
+				DMA_CHMADDR(DMA_CH3) 	= (uint32_t)&command;
 				dma_channel_enable(DMA_CH3);		
 			}
 		#endif
@@ -159,6 +181,7 @@ int main(void)
 		main_loop_counter++;
 		
 	}
+#pragma clang diagnostic pop
 }
 
 
