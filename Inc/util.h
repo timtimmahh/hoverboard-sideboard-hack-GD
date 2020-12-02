@@ -25,15 +25,19 @@
 
 
 /* Rx Structures USART */
-#ifdef SERIAL_CONTROL
-/* typedef struct{
+#ifdef SIDEBOARD_CONTROL
+typedef struct{
   uint16_t  start;
   int16_t   roll;
   int16_t   pitch;
   int16_t   yaw;
-  uint16_t  sensors;
+  uint8_t	sensor1;
+  uint8_t	sensor2;
+  uint8_t 	mpuStatus;
   uint16_t  checksum;
-} SerialSideboard; */
+} SerialSideboard;
+#endif
+#ifdef SERIAL_CONTROL
 typedef struct {
   uint16_t start;
   int16_t steer;
@@ -43,23 +47,15 @@ typedef struct {
 typedef struct {
     uint16_t start;
     int16_t  speed;
-    bool     enabled;
+    bool     s1Enabled;
+    bool     s2Enabled;
+    bool     sensorPressed;
     uint16_t checksum;
 } OneWheelCommand;
 typedef struct {
     OneWheelCommand commandL;
     OneWheelCommand commandR;
 } TwoWheelCommand;
-/* typedef struct tag_sensor_frame{
-  uint16_t header_00; // this byte gets 0x100 (9 bit serial)
-  int16_t Angle;
-  int16_t Angle_duplicate;
-  unsigned char AA_55;
-  int16_t Accelleration;
-  int16_t Accelleration_duplicate;
-  int16_t Roll;
-  uint16_t checksum;
-} SENSOR_FRAME; */
 #endif
 #ifdef SERIAL_FEEDBACK
 typedef struct{
@@ -81,6 +77,35 @@ typedef struct{
   unsigned char unknown2;
   unsigned char unknown3;
 } SENSOR_LIGHTS; */
+#endif
+#ifdef AUX45_USE_USART
+typedef struct {
+  uint16_t start;
+#ifdef SIDEBOARD_CONTROL
+  int16_t   roll;
+  int16_t   pitch;
+  int16_t   yaw;
+  uint8_t	sensor1;
+  uint8_t	sensor2;
+  uint8_t 	mpuStatus;
+#endif
+#ifdef SERIAL_CONTROL
+  int16_t  speed;
+  bool     s1Enabled;
+  bool     s2Enabled;
+  bool     sensorPressed;
+#endif
+#ifdef SERIAL_FEEDBACK
+  int16_t   cmd1;
+  int16_t   cmd2;
+  int16_t   speedR_meas;
+  int16_t   speedL_meas;
+  int16_t   batVoltage;
+  int16_t   boardTemp;
+  uint16_t  cmdLed;
+#endif
+  uint16_t checksum;
+} AUXSerialDebug;
 #endif
 
 /* general functions */

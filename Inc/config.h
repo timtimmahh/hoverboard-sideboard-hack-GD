@@ -29,7 +29,8 @@
 #if !defined(PLATFORMIO)
 // #define VARIANT_DEBUG                       // Variant for debugging and checking the capabilities of the side-board
 #define VARIANT_HOVERBOARD                  // Variant for using the side-boards connected to the Hoverboard mainboard
-#define AUTONOMOUS
+//#define VARIANT_USART
+//#define AUTONOMOUS
 #endif
 
 /* ==================================== DO NOT TOUCH SETTINGS ==================================== */
@@ -65,6 +66,11 @@
 #if defined(VARIANT_DEBUG)
 #define SERIAL_DEBUG                        // [-] Define for Serial Debug via the serial port
 #elif defined(VARIANT_HOVERBOARD)
+// [-] Define for Serial Control via the serial port
+#define SIDEBOARD_CONTROL
+// [-] Define for Serial Feedback via the serial port
+#define SERIAL_FEEDBACK
+#elif defined(VARIANT_USART)
 #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
 #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
 #endif
@@ -88,8 +94,13 @@
 
 
 /* ==================================== VALIDATE SETTINGS ==================================== */
-#if defined(SERIAL_DEBUG) && defined(SERIAL_CONTROL)
-#error SERIAL_DEBUG and SERIAL_CONTROL not allowed. It is on the same cable.
+#if defined(SERIAL_DEBUG) && (defined(SERIAL_CONTROL) || defined \
+(SIDEBOARD_CONTROL))
+  #if defined(SERIAL_CONTROL)
+  #error SERIAL_DEBUG and SERIAL_CONTROL not allowed. It is on the same cable.
+  #elif defined(SIDEBOARD_CONTROL)
+  #error SERIAL_DEBUG and SIDEBOARD_CONTROL not allowed. It is on the same cable.
+  #endif
 #endif
 
 #if defined(SERIAL_DEBUG) && defined(SERIAL_FEEDBACK)
